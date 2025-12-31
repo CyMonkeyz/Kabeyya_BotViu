@@ -1,11 +1,10 @@
 {
-  "name": "ariganteng",
+  "name": "KabeyyaB2BViu",
   "version": "1.0.0",
   "description": "",
-  "main": "start.js",
+  "main": "index.js",
   "scripts": {
-    "start.js": "nodemon start.js",
-    "start": "node start.js"
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
