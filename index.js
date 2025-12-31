@@ -252,13 +252,13 @@ const getInfo = (datauserid, datatoken, partner) => new Promise((resolve, reject
 const start = () => {
   console.log(
     colors.white(
-      figlet.textSync('Telegram BOT', {
+      figlet.textSync('KABEYYA  VIU  BOT', {
         horizontalLayout: 'fitted'
       })
     )
   );
   (async () => {
-    console.log('       By AMFCODE\n\n')
+    console.log('       By Kabeyya_B2B\n\n')
     console.log(colors.yellow(`Server Running!`))
     bot.onText(/\echo (.+)/, (msg, macth) => {
       const chatId = msg.chat.id;
@@ -291,7 +291,7 @@ if (text.startsWith(command)) {
     
     const loadingMessage = await bot.sendMessage(chatId, '⏳ Processing Creating Account 0%');
 
-    let namafile = `${berapa} Account by amfcode${getRandomBytes(2)}.txt`;
+    let namafile = `${berapa} Account by Kabeyya_B2B${getRandomBytes(2)}.txt`;
     let accountsData = '';
 
     for (let index = 0; index < berapa; index++) {
@@ -342,11 +342,11 @@ if (text.startsWith(command)) {
     });
 
 } else if (text.startsWith('/start')) {
-        bot.sendMessage(chatId, `🚀 Selamat Datang di AMFCODE Bot! 🚀\n\nIni Adalah Bot Auto Creator Account Viu Termasuk Premium Account\n\n :
+        bot.sendMessage(chatId, `🚀 Selamat Datang di Kabeyya Viu Bot! 🚀\n\nIni Adalah Bot Auto Creator Account Viu Termasuk Premium Account\n\n :
 Membuat Akun Tanpa Batas 🚀✨
 
 /claim domain.com password noviu jumlahakun
-contoh : /claim ariganteng.com maulana2004 628451239123 10`)
+contoh : /claim KarinaCantik.com Ningning2004 628451239123 10`)
       }
     });
   })();
