@@ -6,7 +6,7 @@ const { token, botName, isOwner } = require('./settings');
 const { isAuthorized } = require('./services/accessControl');
 const { checkRateLimit } = require('./services/antiSpam');
 const { deleteIncomingMessage } = require('./services/messages');
-const { handleClaim, handleStart, handleUnauthorized } = require('./handlers/commands');
+const { handleClaim, handleStart, handleUnauthorized, handleViuHealth } = require('./handlers/commands');
 const { handleOwnerCallback, handleOwnerInput, handleOwnerMenu } = require('./handlers/ownerMenu');
 const { handleUnknown } = require('./handlers/unknown');
 const { handleNavCallback } = require('./ui/router');
@@ -123,6 +123,22 @@ const start = () => {
 
       if (text.startsWith('/claim')) {
         await handleClaim(bot, msg);
+        return;
+      }
+
+      if (text.startsWith('/viuhealth')) {
+        if (!isOwner(userId)) {
+          const currentState = getCurrentState(chatId);
+          await sendMessageWithNav(
+            bot,
+            chatId,
+            '*🚫 Khusus owner.*\n\nSilakan hubungi owner untuk bantuan.',
+            { parse_mode: 'Markdown' },
+            { stateId: currentState.id, replace: true }
+          );
+          return;
+        }
+        await handleViuHealth(bot, msg);
         return;
       }
 

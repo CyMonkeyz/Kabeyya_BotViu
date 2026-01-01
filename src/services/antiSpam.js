@@ -28,7 +28,13 @@ const checkClaimCooldown = (userId) => {
   return { limited: false };
 };
 
+const setClaimCooldown = (userId, cooldownMs = rateLimit.claimCooldownMs) => {
+  const now = Date.now();
+  claimCooldown.set(userId, now - rateLimit.claimCooldownMs + cooldownMs);
+};
+
 module.exports = {
   checkRateLimit,
-  checkClaimCooldown
+  checkClaimCooldown,
+  setClaimCooldown
 };

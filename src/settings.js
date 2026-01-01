@@ -15,6 +15,21 @@ function readInt(name, fallback = 0) {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function normalizeBaseUrl(value, fallback) {
+  const raw = readEnv(value, fallback);
+  const trimmed = raw.trim().replace(/\/+$/, '');
+  if (!trimmed) {
+    return fallback.replace(/\/+$/, '');
+  }
+  try {
+    const url = new URL(trimmed);
+    return url.toString().replace(/\/+$/, '');
+  } catch (error) {
+    console.warn(`Invalid URL for ${value}: "${raw}". Falling back to default.`);
+    return fallback.replace(/\/+$/, '');
+  }
+}
+
 /** Parse "111,222,333" jadi array string ["111","222","333"] */
 function parseIdList(value) {
   return String(value || '')
@@ -58,11 +73,28 @@ const rentalPrices = [
   { label: '30 Hari', price: '$15' }
 ];
 
+// ===== Konfigurasi VIU =====
+const viuConfig = {
+  umBaseUrl: normalizeBaseUrl('VIU_UM_BASE_URL', 'https://um.viuapi.io'),
+  clientAuth: readEnv('VIU_CLIENT_AUTH', ''),
+  client: readEnv('VIU_CLIENT', 'android'),
+  userAgent: readEnv('VIU_USER_AGENT', 'okhttp/4.9.3'),
+  timeoutMs: readInt('VIU_TIMEOUT_MS', 15000),
+  proxyUrl: readEnv('VIU_PROXY_URL', '')
+};
+
+if (!viuConfig.clientAuth) {
+  console.warn(
+    'VIU_CLIENT_AUTH belum di-set. UM endpoint akan gagal hingga kredensial diisi.'
+  );
+}
+
 // ===== Rate limit / anti spam =====
 const rateLimit = {
   windowMs: readInt('RATE_WINDOW_MS', 8000),
   maxMessages: readInt('RATE_MAX_MESSAGES', 4),
-  claimCooldownMs: readInt('RATE_CLAIM_COOLDOWN_MS', 30000)
+  claimCooldownMs: readInt('RATE_CLAIM_COOLDOWN_MS', 30000),
+  claimForbiddenCooldownMs: readInt('RATE_CLAIM_FORBIDDEN_COOLDOWN_MS', 15000)
 };
 
 module.exports = {
@@ -81,6 +113,7 @@ module.exports = {
   botName,
   rentalContact,
   rentalPrices,
+  viuConfig,
 
   // anti spam
   rateLimit
