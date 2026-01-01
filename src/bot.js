@@ -31,6 +31,7 @@ const start = () => {
 
   process.on('uncaughtException', (error) => {
     console.error('Uncaught exception:', error);
+    process.exitCode = 1;
   });
 
   bot.on('callback_query', async (query) => {
