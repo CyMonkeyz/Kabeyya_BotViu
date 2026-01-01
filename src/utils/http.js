@@ -25,6 +25,9 @@ class HttpResponseError extends Error {
 
 const shouldRetryError = (error) => {
   if (error instanceof HttpResponseError) {
+    if ([401, 403].includes(error.status)) {
+      return false;
+    }
     return [502, 503, 504].includes(error.status);
   }
   if (error?.name === 'AbortError') {
@@ -48,6 +51,7 @@ const fetchJsonSafe = async (url, options = {}, config = {}) => {
       const bodyText = await response.text();
       const contentType = response.headers.get('content-type') || '';
       const isJson = contentType.includes('application/json');
+      const bodySnippet = bodyText.slice(0, 240);
 
       if (!response.ok || !isJson) {
         throw new HttpResponseError({
@@ -55,7 +59,7 @@ const fetchJsonSafe = async (url, options = {}, config = {}) => {
           statusText: response.statusText,
           url: response.url || url,
           contentType,
-          bodySnippet: bodyText.slice(0, 300),
+          bodySnippet,
           isJson
         });
       }
@@ -68,7 +72,7 @@ const fetchJsonSafe = async (url, options = {}, config = {}) => {
           statusText: 'Invalid JSON',
           url: response.url || url,
           contentType,
-          bodySnippet: bodyText.slice(0, 300),
+          bodySnippet,
           isJson
         });
       }

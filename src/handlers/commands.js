@@ -4,8 +4,8 @@ const randomName = require('node-random-name');
 
 const { safeDelete } = require('../services/messages');
 const { escapeMarkdown } = require('../utils/text');
-const { rentalContact, rentalPrices, botName } = require('../settings');
-const { checkClaimCooldown } = require('../services/antiSpam');
+const { rentalContact, rentalPrices, botName, viuConfig, rateLimit } = require('../settings');
+const { checkClaimCooldown, setClaimCooldown } = require('../services/antiSpam');
 const { editMessageWithNav, sendDocumentWithNav, sendErrorWithNav, sendMessageWithNav } = require('../ui/messages');
 const { resetState } = require('../ui/state');
 const {
@@ -72,7 +72,19 @@ const handleUnauthorized = async (bot, chatId) => {
 
 const handleClaim = async (bot, msg) => {
   const chatId = msg.chat.id;
+  const userId = msg.from.id;
   try {
+    if (!viuConfig.clientAuth) {
+      await sendMessageWithNav(
+        bot,
+        chatId,
+        '*🚫 Konfigurasi VIU belum lengkap.*\n\nSilakan cek `VIU_CLIENT_AUTH` pada settings sebelum melakukan klaim.',
+        { parse_mode: 'Markdown' },
+        { stateId: 'claim', replace: true }
+      );
+      return;
+    }
+
     const text = msg.text || '';
     const parts = text.replace('/claim', '').trim().split(/\s+/).filter(Boolean);
     if (parts.length < 4) {
@@ -98,9 +110,9 @@ const handleClaim = async (bot, msg) => {
       return;
     }
 
-    const rateLimit = checkClaimCooldown(msg.from.id);
-    if (rateLimit.limited) {
-      const seconds = Math.ceil(rateLimit.retryAfterMs / 1000);
+    const cooldown = checkClaimCooldown(userId);
+    if (cooldown.limited) {
+      const seconds = Math.ceil(cooldown.retryAfterMs / 1000);
       await sendMessageWithNav(
         bot,
         chatId,
@@ -215,11 +227,33 @@ const handleClaim = async (bot, msg) => {
     }
   } catch (error) {
     if (error?.isServiceError) {
+      const status = error.meta?.status;
+      if (status === 401 || status === 403) {
+        console.error('Upstream forbidden', {
+          status: error.meta?.status,
+          statusText: error.meta?.statusText,
+          url: error.meta?.url,
+          contentType: error.meta?.contentType,
+          bodySnippet: error.meta?.bodySnippet
+        });
+        setClaimCooldown(userId, rateLimit.claimForbiddenCooldownMs);
+        await sendErrorWithNav(
+          bot,
+          chatId,
+          '🚫 Provider menolak permintaan (403).\n'
+            + 'Kemungkinan kredensial API tidak valid atau akses dibatasi (IP/region/allowlist).\n'
+            + 'Silakan cek VIU_CLIENT_AUTH / endpoint di settings atau hubungi penyedia.',
+          'claim'
+        );
+        return;
+      }
+
       console.error('Service error during claim flow', {
         message: error.message,
         meta: error.meta
       });
     }
+
     const message = error?.isServiceError && error.message.includes('non-JSON')
       ? '*🚫 Provider error. Response is not JSON. Please try again later.*'
       : '*⚠️ Terjadi kesalahan saat memproses permintaan.*\n\nSilakan coba lagi nanti.';
@@ -227,8 +261,65 @@ const handleClaim = async (bot, msg) => {
   }
 };
 
+const handleViuHealth = async (bot, msg) => {
+  const chatId = msg.chat.id;
+  if (!viuConfig.clientAuth) {
+    await sendMessageWithNav(
+      bot,
+      chatId,
+      '*⚠️ VIU_CLIENT_AUTH belum di-set.*\n\nHealth check tidak dapat dijalankan.',
+      { parse_mode: 'Markdown' },
+      { stateId: 'home', replace: true }
+    );
+    return;
+  }
+
+  try {
+    await getDeviceInfo();
+    await sendMessageWithNav(
+      bot,
+      chatId,
+      '*✅ Viu health: OK*',
+      { parse_mode: 'Markdown' },
+      { stateId: 'home', replace: true }
+    );
+  } catch (error) {
+    if (error?.isServiceError) {
+      const status = error.meta?.status;
+      const statusText = error.meta?.statusText || 'Unknown';
+      const contentType = error.meta?.contentType || 'unknown';
+      console.error('Viu health check failed', {
+        status,
+        statusText,
+        url: error.meta?.url,
+        contentType,
+        bodySnippet: error.meta?.bodySnippet
+      });
+      const summary = status === 403
+        ? `*🚫 Viu health: Forbidden (403)*\nStatus: ${statusText}\nContent-Type: ${contentType}`
+        : `*⚠️ Viu health: Error (${status || 'n/a'})*\nStatus: ${statusText}\nContent-Type: ${contentType}`;
+      await sendMessageWithNav(
+        bot,
+        chatId,
+        summary,
+        { parse_mode: 'Markdown' },
+        { stateId: 'home', replace: true }
+      );
+      return;
+    }
+
+    await sendErrorWithNav(
+      bot,
+      chatId,
+      '*⚠️ Health check gagal dijalankan.*',
+      'home'
+    );
+  }
+};
+
 module.exports = {
   handleClaim,
   handleStart,
-  handleUnauthorized
+  handleUnauthorized,
+  handleViuHealth
 };
