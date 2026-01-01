@@ -1,11 +1,14 @@
-const { sendCleanMessage } = require('../services/messages');
+const { sendMessageWithNav } = require('../ui/messages');
+const { getCurrentState } = require('../ui/state');
 
 const handleUnknown = async (bot, chatId) => {
-  await sendCleanMessage(
+  const currentState = getCurrentState(chatId);
+  await sendMessageWithNav(
     bot,
     chatId,
-    '*🤔 I did not understand that message.*\n\nPlease use `/start` to see the available commands.',
-    { parse_mode: 'Markdown' }
+    '*🤔 Saya tidak memahami pesan itu.*\n\nGunakan `/start` untuk melihat perintah yang tersedia.',
+    { parse_mode: 'Markdown' },
+    { stateId: currentState.id, replace: true }
   );
 };
 
