@@ -11,10 +11,15 @@ const isOwner = (userId) => ownerSet.has(String(userId));
 
 module.exports = {
   token: "8559527210:AAGaxTg1YJBZUOSJfOOql8zPDX-np3dRmVU",
+<<<<<<< Updated upstream
   // Gunakan OWNER_ID env atau ubah defaultOwnerIds untuk banyak owner.
   ownerIds,
   ownerSet,
   isOwner,
+=======
+  // Set your Telegram numeric IDs below.
+  ownerId: 7441740571,
+>>>>>>> Stashed changes
   accessId: 0,
   botName: "KabeyyaB2BViu",
   rentalContact: "t.me/Taubatz",
