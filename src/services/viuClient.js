@@ -5,9 +5,7 @@ var random_name = require('node-random-name');
 var HttpsProxyAgent = require('https-proxy-agent');
 const crypto = require('crypto')
 const randomUseragent = require('random-useragent');
-const {
-  uuid
-} = require('uuidv4');
+const { v4: uuid } = require('uuid');
 const axios = require('axios');
 const randstr = length => {
   var text = "";
@@ -109,7 +107,7 @@ const getToken2 = (deviceId) => new Promise((resolve, reject) => {
     });
   return index
 });
-const getIdent = (partner, deviceId, tokenPartner) => new Promise((resolve, reject) => {
+const getIdent = (deviceId, partner, tokenPartner) => new Promise((resolve, reject) => {
   const bodys = {
     "deviceId": deviceId,
     "partnerId": partner,
@@ -339,4 +337,14 @@ if (text.startsWith(command)) {
   }
     });
   })();
-}
+} 
+
+module.exports = {
+  getAcc,
+  getDeviceInfo,
+  getIdent,
+  getInfo,
+  getRandomBytes,
+  getToken2,
+  getUserId
+};
