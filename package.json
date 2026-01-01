@@ -35,6 +35,6 @@
     "readline-sync": "^1.4.10",
     "requests": "^0.3.0",
     "threading": "^0.0.2",
-    "uuidv4": "^6.2.13"
+    "uuid": "^3.4.0"
   }
 }

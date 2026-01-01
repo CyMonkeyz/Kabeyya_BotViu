@@ -1,18 +1,20 @@
-const { ownerId, accessId } = require('../settings');
+const { accessId, isOwner } = require('../settings');
 const { listUsers } = require('./userStore');
 
+const isAccess = (userId) => String(userId) === String(accessId);
+
 const getRole = (userId) => {
-  if (userId === ownerId) {
+  if (isOwner(userId)) {
     return 'owner';
   }
-  if (userId === accessId) {
+  if (isAccess(userId)) {
     return 'access';
   }
   return 'user';
 };
 
 const isAuthorized = (userId) => {
-  if (userId === ownerId || userId === accessId) {
+  if (isOwner(userId) || isAccess(userId)) {
     return { allowed: true, expiresAt: null, role: getRole(userId) };
   }
   const users = listUsers();

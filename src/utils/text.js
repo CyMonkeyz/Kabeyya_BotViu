@@ -2,10 +2,10 @@ const escapeMarkdown = (text = '') => text.replace(/[_*\[\]()~`>#+\-=|{}.!]/g, '
 
 const formatDuration = (expiresAt) => {
   if (!expiresAt) {
-    return 'No expiry';
+    return 'Tidak ada kedaluwarsa';
   }
   const date = new Date(Number(expiresAt));
-  return date.toLocaleString('en-GB', { timeZone: 'UTC' }) + ' UTC';
+  return date.toLocaleString('id-ID', { timeZone: 'UTC' }) + ' UTC';
 };
 
 module.exports = {
