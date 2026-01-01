@@ -7,6 +7,7 @@ const crypto = require('crypto')
 const randomUseragent = require('random-useragent');
 const { v4: uuid } = require('uuid');
 const axios = require('axios');
+const { fetchJson } = require('../utils/fetchJson');
 const randstr = length => {
   var text = "";
   var possible =
@@ -32,7 +33,7 @@ function getRandomBytes(length) {
   }
   return bytes_str;
 }
-const getToken = (randomUserAgent) => new Promise((resolve, reject) => {
+const getToken = async (randomUserAgent) => {
   const bodys = {
     'appVersion': '3.18.0',
     "countryCode": "ID",
@@ -43,205 +44,176 @@ const getToken = (randomUserAgent) => new Promise((resolve, reject) => {
     "carrierId": "333",
     "carrierName": "HUTCH"
   };
-  const index = fetch('https://api-gateway-global.viu.com/api/auth/token?platform_flag_label=web&area_id=1000&language_flag_id=8&platformFlagLabel=web&areaId=1000&languageFlagId=8&countryCode=ID', {
+  const data = await fetchJson(
+    'https://api-gateway-global.viu.com/api/auth/token?platform_flag_label=web&area_id=1000&language_flag_id=8&platformFlagLabel=web&areaId=1000&languageFlagId=8&countryCode=ID',
+    {
       method: 'POST',
       headers: {
         'User-Agent': randomUserAgent,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(bodys)
-    })
-    .then(async (res) => {
-      const data = await res.json()
-      resolve({
-        data,
-      })
-    });
-  return index
-});
-const getDeviceInfo = () => new Promise((resolve, reject) => {
-  const index = fetch(`https://um.viuapi.io/user/device?id1=${getRandomBytes(16)}`, {
-      method: 'GET',
-      headers: {
-        "x-client-auth": "b6fea2dd3d110b12fbd23d7ab8cd0ba3",
-        "accept": "application/json",
-        "x-client": "android",
-        "content-type": "application/json",
-        "x-session-id": getRandomBytes(32),
-        "x-request-id": uuid(),
-        "x-enable-drm": "true",
-        "user-agent": "okhttp/4.9.3"
-      },
-    })
-    .then(async (res) => {
-      const data = await res.json()
-      resolve({
-        data,
-      })
-    });
-  return index
-});
-const getToken2 = (deviceId) => new Promise((resolve, reject) => {
+    }
+  );
+  return {
+    data
+  };
+};
+const getDeviceInfo = async () => {
+  const data = await fetchJson(`https://um.viuapi.io/user/device?id1=${getRandomBytes(16)}`, {
+    method: 'GET',
+    headers: {
+      "x-client-auth": "b6fea2dd3d110b12fbd23d7ab8cd0ba3",
+      "accept": "application/json",
+      "x-client": "android",
+      "content-type": "application/json",
+      "x-session-id": getRandomBytes(32),
+      "x-request-id": uuid(),
+      "x-enable-drm": "true",
+      "user-agent": "okhttp/4.9.3"
+    }
+  });
+  return {
+    data
+  };
+};
+const getToken2 = async (deviceId) => {
   const bodys = {
     "deviceId": deviceId
   };
-  const index = fetch(`https://um.viuapi.io/user/identity`, {
-      method: 'POST',
-      headers: {
-        "x-client-auth": "b6fea2dd3d110b12fbd23d7ab8cd0ba3",
-        "accept": "application/json",
-        "x-client": "android",
-        "content-type": "application/json",
-        "x-session-id": getRandomBytes(32),
-        "x-request-id": uuid(),
-        "x-enable-drm": "true",
-        "user-agent": "okhttp/4.9.3"
-      },
-      body: JSON.stringify(bodys)
-    })
-    .then(async (res) => {
-      const data = await res.json()
-      resolve({
-        data,
-      })
-    });
-  return index
-});
-const getIdent = (deviceId, partner, tokenPartner) => new Promise((resolve, reject) => {
+  const data = await fetchJson(`https://um.viuapi.io/user/identity`, {
+    method: 'POST',
+    headers: {
+      "x-client-auth": "b6fea2dd3d110b12fbd23d7ab8cd0ba3",
+      "accept": "application/json",
+      "x-client": "android",
+      "content-type": "application/json",
+      "x-session-id": getRandomBytes(32),
+      "x-request-id": uuid(),
+      "x-enable-drm": "true",
+      "user-agent": "okhttp/4.9.3"
+    },
+    body: JSON.stringify(bodys)
+  });
+  return {
+    data
+  };
+};
+const getIdent = async (deviceId, partner, tokenPartner) => {
   const bodys = {
     "deviceId": deviceId,
     "partnerId": partner,
     "partnerName": "Telkomsel"
   };
-  const index = fetch(`https://um.viuapi.io/user/identity`, {
-      method: 'POST',
-      headers: {
-        "x-client-auth": "b6fea2dd3d110b12fbd23d7ab8cd0ba3",
-        "accept": "application/json",
-        "x-client": "android",
-        "content-type": "application/json",
-        "x-session-id": getRandomBytes(16),
-        "x-request-id": uuid(),
-        "x-enable-drm": "true",
-        "authorization": tokenPartner,
-        "user-agent": "okhttp/4.9.3"
-      },
-      body: JSON.stringify(bodys)
-    })
-    .then(async (res) => {
-      const data = await res.json()
-      resolve({
-        data,
-      })
-    });
-  return index
-});
-const getAccount = (email, password, randomUserAgent, token) => new Promise((resolve, reject) => {
+  const data = await fetchJson(`https://um.viuapi.io/user/identity`, {
+    method: 'POST',
+    headers: {
+      "x-client-auth": "b6fea2dd3d110b12fbd23d7ab8cd0ba3",
+      "accept": "application/json",
+      "x-client": "android",
+      "content-type": "application/json",
+      "x-session-id": getRandomBytes(16),
+      "x-request-id": uuid(),
+      "x-enable-drm": "true",
+      "authorization": tokenPartner,
+      "user-agent": "okhttp/4.9.3"
+    },
+    body: JSON.stringify(bodys)
+  });
+  return {
+    data
+  };
+};
+const getAccount = async (email, password, randomUserAgent, token) => {
   const bodys = {
     'email': email,
     'password': password,
     'authPrivacy': 1,
     'provider': 'email'
   };
-  const index = fetch('https://api-gateway-global.viu.com/api/auth/register', {
-      method: 'POST',
-      headers: {
-        'User-Agent': randomUserAgent,
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(bodys)
-    })
-    .then(async (res) => {
-      const data = await res.json()
-      resolve({
-        data,
-      })
-    });
-  return index
-});
-const getAcc = (email, passhash, tokendaripartner) => new Promise((resolve, reject) => {
+  const data = await fetchJson('https://api-gateway-global.viu.com/api/auth/register', {
+    method: 'POST',
+    headers: {
+      'User-Agent': randomUserAgent,
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify(bodys)
+  });
+  return {
+    data
+  };
+};
+const getAcc = async (email, passhash, tokendaripartner) => {
   const bodys = {
     "password": passhash,
     "principal": email,
     "providerCode": "email"
   };
-  const index = fetch('https://um.viuapi.io/user/account', {
-      method: 'POST',
-      headers: {
-        "x-client-auth": "b6fea2dd3d110b12fbd23d7ab8cd0ba3",
-        "accept": "application/json",
-        "x-client": "android",
-        "content-type": "application/json",
-        "x-session-id": getRandomBytes(32),
-        "x-request-id": uuid(),
-        "x-enable-drm": "true",
-        "authorization": tokendaripartner,
-        "user-agent": "okhttp/4.9.3"
-      },
-      body: JSON.stringify(bodys)
-    })
-    .then(async (res) => {
-      const data = await res.json()
-      resolve({
-        data,
-      })
-    });
-  return index
-});
-const getUserId = (accountId, deviceId, partner, tokendaripartner) => new Promise((resolve, reject) => {
+  const data = await fetchJson('https://um.viuapi.io/user/account', {
+    method: 'POST',
+    headers: {
+      "x-client-auth": "b6fea2dd3d110b12fbd23d7ab8cd0ba3",
+      "accept": "application/json",
+      "x-client": "android",
+      "content-type": "application/json",
+      "x-session-id": getRandomBytes(32),
+      "x-request-id": uuid(),
+      "x-enable-drm": "true",
+      "authorization": tokendaripartner,
+      "user-agent": "okhttp/4.9.3"
+    },
+    body: JSON.stringify(bodys)
+  });
+  return {
+    data
+  };
+};
+const getUserId = async (accountId, deviceId, partner, tokendaripartner) => {
   const bodys = {
     "accountId": accountId,
     "deviceId": deviceId,
     "partnerId": partner,
     "partnerName": "Telkomsel"
   };
-  const index = fetch('https://um.viuapi.io/user/identity', {
-      method: 'POST',
-      headers: {
-        "x-client-auth": "b6fea2dd3d110b12fbd23d7ab8cd0ba3",
-        "accept": "application/json",
-        "x-client": "android",
-        "content-type": "application/json",
-        "x-session-id": getRandomBytes(32),
-        "x-request-id": uuid(),
-        "x-enable-drm": "true",
-        "authorization": tokendaripartner,
-        "user-agent": "okhttp/4.9.3"
-      },
-      body: JSON.stringify(bodys)
-    })
-    .then(async (res) => {
-      const data = await res.json()
-      resolve({
-        data,
-      })
-    });
-  return index
-});
-const getInfo = (datauserid, datatoken, partner) => new Promise((resolve, reject) => {
-  const index = fetch(`https://um.viuapi.io/viuapp-bff/v1/my?appid=viu_android&ver=2.0&appver=2.1.0&fmt=json&platform=app&productId=1&iid=${getRandomBytes(16)}=samsung&carrierid=72&model=SM-S918B&devicetimezone=&devicecountry=&languageid=id&geo=10&regionid=all&ccode=ID&appsessid=&offerid=tmsel.30.VIU_MAX30D2&msisdn=${partner}&vuserid=${datauserid}&partner=Telkomsel&userid=${datauserid}&contentFlavour=all&networkType=4g&deviceId=${getRandomBytes(16)}&configVersion=1.0&languageId=id&partnerName=Telkomsel`, {
-      method: 'GET',
-      headers: {
-        "x-client-auth": "b6fea2dd3d110b12fbd23d7ab8cd0ba3",
-        "authorization": datatoken,
-        "accept": "application/json",
-        "x-client": "android",
-        "content-type": "application/json",
-        "x-session-id": getRandomBytes(32),
-        "x-request-id": uuid(),
-        "x-enable-drm": "true",
-        "user-agent": "okhttp/4.9.3"
-      },
-    })
-    .then(async (res) => {
-      const data = await res.json()
-      resolve({
-        data,
-      })
-    });
-  return index
-});
+  const data = await fetchJson('https://um.viuapi.io/user/identity', {
+    method: 'POST',
+    headers: {
+      "x-client-auth": "b6fea2dd3d110b12fbd23d7ab8cd0ba3",
+      "accept": "application/json",
+      "x-client": "android",
+      "content-type": "application/json",
+      "x-session-id": getRandomBytes(32),
+      "x-request-id": uuid(),
+      "x-enable-drm": "true",
+      "authorization": tokendaripartner,
+      "user-agent": "okhttp/4.9.3"
+    },
+    body: JSON.stringify(bodys)
+  });
+  return {
+    data
+  };
+};
+const getInfo = async (datauserid, datatoken, partner) => {
+  const data = await fetchJson(`https://um.viuapi.io/viuapp-bff/v1/my?appid=viu_android&ver=2.0&appver=2.1.0&fmt=json&platform=app&productId=1&iid=${getRandomBytes(16)}=samsung&carrierid=72&model=SM-S918B&devicetimezone=&devicecountry=&languageid=id&geo=10&regionid=all&ccode=ID&appsessid=&offerid=tmsel.30.VIU_MAX30D2&msisdn=${partner}&vuserid=${datauserid}&partner=Telkomsel&userid=${datauserid}&contentFlavour=all&networkType=4g&deviceId=${getRandomBytes(16)}&configVersion=1.0&languageId=id&partnerName=Telkomsel`, {
+    method: 'GET',
+    headers: {
+      "x-client-auth": "b6fea2dd3d110b12fbd23d7ab8cd0ba3",
+      "authorization": datatoken,
+      "accept": "application/json",
+      "x-client": "android",
+      "content-type": "application/json",
+      "x-session-id": getRandomBytes(32),
+      "x-request-id": uuid(),
+      "x-enable-drm": "true",
+      "user-agent": "okhttp/4.9.3"
+    }
+  });
+  return {
+    data
+  };
+};
 const start = () => {
   console.log(
     colors.white(

@@ -214,8 +214,14 @@ const handleClaim = async (bot, msg) => {
       fs.unlinkSync(filename);
     }
   } catch (error) {
-    const message = error?.isServiceError
-      ? `*⚠️ ${error.message}*`
+    if (error?.isServiceError) {
+      console.error('Service error during claim flow', {
+        message: error.message,
+        meta: error.meta
+      });
+    }
+    const message = error?.isServiceError && error.message.includes('non-JSON')
+      ? '*🚫 Provider error. Response is not JSON. Please try again later.*'
       : '*⚠️ Terjadi kesalahan saat memproses permintaan.*\n\nSilakan coba lagi nanti.';
     await sendErrorWithNav(bot, chatId, message, 'claim');
   }
