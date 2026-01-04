@@ -37,6 +37,26 @@ function getRandomBytes(length) {
   }
   return bytes_str;
 }
+async function fetchJsonOrThrow(url, options = {}) {
+  const res = await fetch(url, options);
+
+  const contentType = (res.headers.get('content-type') || '').toLowerCase();
+  const raw = await res.text();
+
+  if (!res.ok) {
+    const snippet = raw.slice(0, 200).replace(/\s+/g, ' ');
+    const err = new Error(`HTTP ${res.status} ${res.statusText} | ${snippet}`);
+    err.status = res.status;
+    throw err;
+  }
+
+  if (!contentType.includes('application/json')) {
+    const snippet = raw.slice(0, 200).replace(/\s+/g, ' ');
+    throw new Error(`Expected JSON but got ${contentType || '(no content-type)'} | ${snippet}`);
+  }
+
+  return JSON.parse(raw);
+}
 const getToken = (randomUserAgent) => new Promise((resolve, reject) => {
   const bodys = {
     'appVersion': '3.18.0',
@@ -64,8 +84,9 @@ const getToken = (randomUserAgent) => new Promise((resolve, reject) => {
     });
   return index
 });
-const getDeviceInfo = () => new Promise((resolve, reject) => {
-  const index = fetch(`https://um.viuapi.io/user/device?id1=${getRandomBytes(16)}`, {
+const getDeviceInfo = () => new Promise(async (resolve, reject) => {
+  try {
+    const data = await fetchJsonOrThrow(`https://um.viuapi.io/user/device?id1=${getRandomBytes(16)}`, {
       method: 'GET',
       headers: {
         "x-client-auth": "b6fea2dd3d110b12fbd23d7ab8cd0ba3",
@@ -77,14 +98,13 @@ const getDeviceInfo = () => new Promise((resolve, reject) => {
         "x-enable-drm": "true",
         "user-agent": "okhttp/4.9.3"
       },
-    })
-    .then(async (res) => {
-      const data = await res.json()
-      resolve({
-        data,
-      })
     });
-  return index
+    resolve({
+      data,
+    });
+  } catch (e) {
+    reject(e);
+  }
 });
 const getToken2 = (deviceId) => new Promise((resolve, reject) => {
   const bodys = {
@@ -297,7 +317,13 @@ if (text.startsWith(command)) {
       const username = random_name().replace(/\s/g, '');
       const email = `${username}@${domain}`;
 
-      const gettingDeviceId = await getDeviceInfo();
+      let gettingDeviceId;
+      try {
+        gettingDeviceId = await getDeviceInfo();
+      } catch (e) {
+        await bot.editMessageText(`Request gagal: ${e.message}`, { chat_id: chatId, message_id: loadingMessage.message_id });
+        return;
+      }
       const deviceId = gettingDeviceId.data.deviceId;
 
       if (deviceId) {
