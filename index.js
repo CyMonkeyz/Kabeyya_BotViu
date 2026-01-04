@@ -96,7 +96,12 @@ const getDeviceInfo = () => new Promise(async (resolve, reject) => {
         "x-session-id": getRandomBytes(32),
         "x-request-id": uuidv4(),
         "x-enable-drm": "true",
-        "user-agent": "okhttp/4.9.3"
+        "user-agent": "okhttp/4.9.3",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "Referer": "https://www.viu.com/",
+        "Origin": "https://www.viu.com"
       },
     });
     resolve({
